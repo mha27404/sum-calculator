@@ -7,6 +7,7 @@ class GPAApp:
         self.root.title("محاسبه معدل دانشگاه")
 
         self.courses = []  # لیست برای ذخیره دروس
+        self.edit_index = None  # برای تشخیص اینکه آیا در حالت ویرایش هستیم یا نه
 
         # ورودی‌ها
         tk.Label(root, text="نام درس:").grid(row=0, column=0, padx=5, pady=5)
@@ -24,11 +25,12 @@ class GPAApp:
         # دکمه‌ها
         tk.Button(root, text="➕ اضافه کردن درس", command=self.add_course).grid(row=3, column=0, columnspan=2, pady=5)
         tk.Button(root, text="🗑️ حذف درس انتخاب‌شده", command=self.delete_course).grid(row=4, column=0, columnspan=2, pady=5)
-        tk.Button(root, text="📊 محاسبه معدل", command=self.calculate_gpa).grid(row=5, column=0, columnspan=2, pady=10)
+        tk.Button(root, text="✏️ ویرایش درس انتخاب‌شده", command=self.edit_course).grid(row=5, column=0, columnspan=2, pady=5)
+        tk.Button(root, text="📊 محاسبه معدل", command=self.calculate_gpa).grid(row=6, column=0, columnspan=2, pady=10)
 
         # لیست دروس
         self.course_list = tk.Listbox(root, width=50, height=10)
-        self.course_list.grid(row=6, column=0, columnspan=2, padx=10, pady=10)
+        self.course_list.grid(row=7, column=0, columnspan=2, padx=10, pady=10)
 
     def add_course(self):
         try:
@@ -40,8 +42,16 @@ class GPAApp:
                 messagebox.showwarning("خطا", "نام درس را وارد کنید")
                 return
 
-            self.courses.append((name, grade, credit))
-            self.course_list.insert(tk.END, f"{name} - نمره: {grade} - واحد: {credit}")
+            if self.edit_index is not None:
+                # حالت ویرایش
+                self.courses[self.edit_index] = (name, grade, credit)
+                self.course_list.delete(self.edit_index)
+                self.course_list.insert(self.edit_index, f"{name} - نمره: {grade} - واحد: {credit}")
+                self.edit_index = None
+            else:
+                # حالت اضافه کردن
+                self.courses.append((name, grade, credit))
+                self.course_list.insert(tk.END, f"{name} - نمره: {grade} - واحد: {credit}")
 
             # پاک کردن ورودی‌ها
             self.entry_name.delete(0, tk.END)
@@ -58,6 +68,26 @@ class GPAApp:
             del self.courses[selected_index]
         except IndexError:
             messagebox.showwarning("هشدار", "هیچ درسی برای حذف انتخاب نشده است")
+
+    def edit_course(self):
+        try:
+            selected_index = self.course_list.curselection()[0]
+            self.edit_index = selected_index
+
+            name, grade, credit = self.courses[selected_index]
+
+            # پر کردن دوباره فیلدها برای ویرایش
+            self.entry_name.delete(0, tk.END)
+            self.entry_name.insert(0, name)
+
+            self.entry_grade.delete(0, tk.END)
+            self.entry_grade.insert(0, grade)
+
+            self.entry_credit.delete(0, tk.END)
+            self.entry_credit.insert(0, credit)
+
+        except IndexError:
+            messagebox.showwarning("هشدار", "هیچ درسی برای ویرایش انتخاب نشده است")
 
     def calculate_gpa(self):
         if not self.courses:
