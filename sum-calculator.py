@@ -22,12 +22,13 @@ class GPAApp:
         self.entry_credit.grid(row=2, column=1, padx=5, pady=5)
 
         # دکمه‌ها
-        tk.Button(root, text="اضافه کردن درس", command=self.add_course).grid(row=3, column=0, columnspan=2, pady=10)
-        tk.Button(root, text="محاسبه معدل", command=self.calculate_gpa).grid(row=4, column=0, columnspan=2, pady=10)
+        tk.Button(root, text="➕ اضافه کردن درس", command=self.add_course).grid(row=3, column=0, columnspan=2, pady=5)
+        tk.Button(root, text="🗑️ حذف درس انتخاب‌شده", command=self.delete_course).grid(row=4, column=0, columnspan=2, pady=5)
+        tk.Button(root, text="📊 محاسبه معدل", command=self.calculate_gpa).grid(row=5, column=0, columnspan=2, pady=10)
 
         # لیست دروس
-        self.course_list = tk.Listbox(root, width=50)
-        self.course_list.grid(row=5, column=0, columnspan=2, padx=10, pady=10)
+        self.course_list = tk.Listbox(root, width=50, height=10)
+        self.course_list.grid(row=6, column=0, columnspan=2, padx=10, pady=10)
 
     def add_course(self):
         try:
@@ -49,6 +50,14 @@ class GPAApp:
 
         except ValueError:
             messagebox.showerror("خطا", "لطفاً نمره و تعداد واحد را به‌صورت عددی وارد کنید")
+
+    def delete_course(self):
+        try:
+            selected_index = self.course_list.curselection()[0]
+            self.course_list.delete(selected_index)
+            del self.courses[selected_index]
+        except IndexError:
+            messagebox.showwarning("هشدار", "هیچ درسی برای حذف انتخاب نشده است")
 
     def calculate_gpa(self):
         if not self.courses:
